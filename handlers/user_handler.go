@@ -35,6 +35,18 @@ type User struct {
 	CareerStage       string `json:"career_stage"`
 }
 
+// UserRegistrationRequest represents the request body for user registration
+type UserRegistrationRequest struct {
+	Name              string `json:"name" binding:"required"`
+	Age               int    `json:"age" binding:"required"`
+	Email             string `json:"email" binding:"required"`
+	MobileNo          string `json:"mobile_no" binding:"required"`
+	PreferredLanguage string `json:"preferred_language" binding:"required"`
+	MaritalStatus     string `json:"marrital_status" binding:"required"`
+	City              string `json:"city" binding:"required"`
+	CareerStage       string `json:"career_stage" binding:"required"`
+}
+
 // Goal represents the goal data structure
 type Goal struct {
 	ID              string  `json:"id"`
@@ -297,6 +309,62 @@ func (h *UserHandler) GetSpecificGoal(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, goal)
+}
+
+// RegisterUser creates or updates a user in Firestore
+func (h *UserHandler) RegisterUser(c *gin.Context) {
+	userID := c.Param("userId")
+	ctx := context.Background()
+
+	// Parse request body
+	var req UserRegistrationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request body",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Prepare user data for Firestore
+	userData := map[string]interface{}{
+		"name":               req.Name,
+		"age":                req.Age,
+		"email":              req.Email,
+		"mobile_no":          req.MobileNo,
+		"preferred_language": req.PreferredLanguage,
+		"marrital_status":    req.MaritalStatus,
+		"city":               req.City,
+		"career_stage":       req.CareerStage,
+	}
+
+	// Save user data to Firestore
+	_, err := h.firestoreClient.Collection("users").Doc(userID).Set(ctx, userData)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to save user data",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Return success response with the created user data
+	user := User{
+		ID:                userID,
+		Name:              req.Name,
+		Age:               req.Age,
+		Email:             req.Email,
+		MobileNo:          req.MobileNo,
+		PreferredLanguage: req.PreferredLanguage,
+		MaritalStatus:     req.MaritalStatus,
+		City:              req.City,
+		CareerStage:       req.CareerStage,
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "User registered successfully",
+		"user":    user,
+	})
 }
 
 // HealthCheck provides a simple health check endpoint

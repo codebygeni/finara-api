@@ -49,6 +49,7 @@ func main() {
 	log.Printf("📋 Available endpoints:")
 	log.Printf("   GET /users - Get all users")
 	log.Printf("   GET /users/:userId - Get specific user")
+	log.Printf("   POST /users/:userId - Register/Update user")
 	log.Printf("   GET /users/:userId/goal_info - Get user's goals")
 	log.Printf("   GET /users/:userId/goal_info/:goalId - Get specific goal")
 	log.Printf("   GET /health - Health check")

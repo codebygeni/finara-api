@@ -14,6 +14,7 @@ func SetupRoutes(r *gin.Engine, userHandler *handlers.UserHandler) {
 	// Simple user routes
 	r.GET("/users", userHandler.GetAllUsers)                               // GET /users
 	r.GET("/users/:userId", userHandler.GetUserByID)                       // GET /users/:userId
+	r.POST("/users/:userId", userHandler.RegisterUser)                     // POST /users/:userId
 	r.GET("/users/:userId/goal_info", userHandler.GetUserGoals)            // GET /users/:userId/goal_info
 	r.GET("/users/:userId/goal_info/:goalId", userHandler.GetSpecificGoal) // GET /users/:userId/goal_info/:goalId
 
@@ -27,6 +28,7 @@ func SetupRoutes(r *gin.Engine, userHandler *handlers.UserHandler) {
 				"health":        "GET /health",
 				"users":         "GET /users",
 				"user_by_id":    "GET /users/:userId",
+				"register_user": "POST /users/:userId",
 				"user_goals":    "GET /users/:userId/goal_info",
 				"specific_goal": "GET /users/:userId/goal_info/:goalId",
 			},
