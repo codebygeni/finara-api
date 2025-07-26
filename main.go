@@ -42,10 +42,6 @@ func main() {
 	// Setup routes
 	router.SetupRoutes(r, userHandler)
 
-	// Add a basic health check endpoint
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok"})
-	})
 
 	// Start server
 	port := os.Getenv("PORT")
