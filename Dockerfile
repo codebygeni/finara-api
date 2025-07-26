@@ -1,10 +1,31 @@
-FROM python:3.10-slim
+# Start from the official Go base image
+FROM golang:1.22 as builder
 
+# Set the working directory inside the container
 WORKDIR /app
+
+# Copy go.mod and go.sum and download dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the source code
 COPY . .
 
-RUN pip install --no-cache-dir -r requirements.txt
+# Build the Go app
+RUN go build -o geni-firestore-api main.go
 
-EXPOSE 8080
+# Start a new minimal base image
+FROM gcr.io/distroless/base-debian11
 
-CMD ["python", "finara_api.py"]
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the built binary and config
+COPY --from=builder /app/geni-firestore-api .
+COPY --from=builder /app/config /app/config
+
+# Set environment variables (optional)
+ENV GOOGLE_APPLICATION_CREDENTIALS="/app/config/firebase-service-account.json"
+
+# Set the entry point
+ENTRYPOINT ["./geni-firestore-api"]
