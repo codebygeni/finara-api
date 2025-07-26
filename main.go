@@ -57,7 +57,7 @@ func main() {
 	log.Printf("   GET /users/:userId/goal_info/:goalId - Get specific goal")
 	log.Printf("   GET /health - Health check")
 
-	if err := r.Run(":" + port); err != nil {
+	if err := r.Run("0.0.0.0:" + port); err != nil {
 		log.Fatalf("❌ Failed to start server: %v", err)
 	}
 }
