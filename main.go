@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	"finara-api/config"
 	"finara-api/handlers"
@@ -14,7 +15,8 @@ import (
 
 func main() {
 	// Initialize Firebase Admin SDK
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	firebaseApp, err := config.InitializeFirebase(ctx)
 	if err != nil {
 		log.Fatalf("❌ Failed to initialize Firebase: %v", err)
