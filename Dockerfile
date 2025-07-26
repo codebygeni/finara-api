@@ -1,5 +1,5 @@
 # Start from the official Go base image
-FROM golang:1.23.0 as builder
+FROM golang:1.23.0 AS builder
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -25,8 +25,6 @@ WORKDIR /app
 COPY --from=builder /app/geni-firestore-api .
 COPY --from=builder /app/config /app/config
 
-# Set environment variables (optional)
-ENV GOOGLE_APPLICATION_CREDENTIALS="/app/config/firebase-service-account.json"
 
 # Expose the port Cloud Run expects
 EXPOSE 9090
