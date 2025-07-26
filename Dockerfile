@@ -28,5 +28,8 @@ COPY --from=builder /app/config /app/config
 # Set environment variables (optional)
 ENV GOOGLE_APPLICATION_CREDENTIALS="/app/config/firebase-service-account.json"
 
+# Expose the port Cloud Run expects
+EXPOSE 8080
+
 # Set the entry point
 ENTRYPOINT ["/bin/sh", "-c", "echo '🚀 Starting Geni Firestore API...' && ./geni-firestore-api"]
