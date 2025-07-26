@@ -32,4 +32,4 @@ ENV GOOGLE_APPLICATION_CREDENTIALS="/app/config/firebase-service-account.json"
 EXPOSE 8080
 
 # Set the entry point
-ENTRYPOINT ["/bin/sh", "-c", "echo '🚀 Starting Geni Firestore API...' && ./geni-firestore-api"]
+ENTRYPOINT ["./geni-firestore-api"]
