@@ -19,6 +19,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Create config directory
+      run: mkdir -p config
+
     - name: Decode Firebase  service account key
       run: echo "${{ secrets.GCP_FIREBASE_SA_KEY_BASE64 }}" | base64 -d > config/firebase-service-account.json
     - name: Decode  GCP service account key  
@@ -50,7 +53,12 @@ jobs:
           --region ${{ env.REGION }} \
           --platform managed \
           --allow-unauthenticated \
-          --port=8080
+          --port=8080 \
+          --timeout=600s \
+          --memory=512Mi
 
     - name: Cleanup service account key
       run: rm "${{ github.workspace }}/service-account.json"
+
+    - name: Cleanup firebase key
+      run: rm -f config/firebase-service-account.json

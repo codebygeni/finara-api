@@ -10,6 +10,7 @@ RUN go mod download
 
 # Copy the source code
 COPY . .
+RUN test -f config/firebase-service-account.json || echo "⚠️ Missing Firebase key! Cloud Run may fail if this is not mounted or baked in."
 
 # Build the Go app
 RUN go build -o geni-firestore-api main.go
@@ -28,4 +29,4 @@ COPY --from=builder /app/config /app/config
 ENV GOOGLE_APPLICATION_CREDENTIALS="/app/config/firebase-service-account.json"
 
 # Set the entry point
-ENTRYPOINT ["./geni-firestore-api"]
+ENTRYPOINT ["/bin/sh", "-c", "echo '🚀 Starting Geni Firestore API...' && ./geni-firestore-api"]
