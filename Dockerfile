@@ -29,7 +29,7 @@ COPY --from=builder /app/config /app/config
 ENV GOOGLE_APPLICATION_CREDENTIALS="/app/config/firebase-service-account.json"
 
 # Expose the port Cloud Run expects
-EXPOSE 8080
+EXPOSE 9090
 
 # Set the entry point
 ENTRYPOINT ["./geni-firestore-api"]
