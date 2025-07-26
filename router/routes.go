@@ -17,6 +17,7 @@ func SetupRoutes(r *gin.Engine, userHandler *handlers.UserHandler) {
 	r.POST("/users/:userId", userHandler.RegisterUser)                     // POST /users/:userId
 	r.GET("/users/:userId/goal_info", userHandler.GetUserGoals)            // GET /users/:userId/goal_info
 	r.GET("/users/:userId/goal_info/:goalId", userHandler.GetSpecificGoal) // GET /users/:userId/goal_info/:goalId
+	r.POST("/users/:userId/goal_info/:goalId", userHandler.RegisterGoal)   // POST /users/:userId/goal_info/:goalId
 
 	// Root endpoint with API info
 	r.GET("/", func(c *gin.Context) {
@@ -31,6 +32,7 @@ func SetupRoutes(r *gin.Engine, userHandler *handlers.UserHandler) {
 				"register_user": "POST /users/:userId",
 				"user_goals":    "GET /users/:userId/goal_info",
 				"specific_goal": "GET /users/:userId/goal_info/:goalId",
+				"register_goal": "POST /users/:userId/goal_info/:goalId",
 			},
 		})
 	})

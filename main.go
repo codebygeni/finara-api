@@ -52,6 +52,7 @@ func main() {
 	log.Printf("   POST /users/:userId - Register/Update user")
 	log.Printf("   GET /users/:userId/goal_info - Get user's goals")
 	log.Printf("   GET /users/:userId/goal_info/:goalId - Get specific goal")
+	log.Printf("   POST /users/:userId/goal_info/:goalId - Register/Update goal")
 	log.Printf("   GET /health - Health check")
 
 	if err := r.Run(":" + port); err != nil {

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"cloud.google.com/go/firestore"
@@ -47,13 +48,21 @@ type UserRegistrationRequest struct {
 	CareerStage       string `json:"career_stage" binding:"required"`
 }
 
+// GoalRegistrationRequest represents the request body for goal registration
+type GoalRegistrationRequest struct {
+	GoalAmount      string `json:"goal_amount" binding:"required"`
+	GoalDescription string `json:"goal_description" binding:"required"`
+	GoalLine        string `json:"goal_line" binding:"required"`
+	GoalTimeline    string `json:"goal_timeline" binding:"required"`
+}
+
 // Goal represents the goal data structure
 type Goal struct {
-	ID              string  `json:"id"`
-	GoalAmount      float64 `json:"goal_amount"`
-	GoalDescription string  `json:"goal_description"`
-	GoalLine        string  `json:"goal_line"`
-	GoalTimeline    int     `json:"goal_timeline"`
+	ID              string `json:"id"`
+	GoalAmount      string `json:"goal_amount"`
+	GoalDescription string `json:"goal_description"`
+	GoalLine        string `json:"goal_line"`
+	GoalTimeline    string `json:"goal_timeline"`
 }
 
 // GetAllUsers retrieves all users from Firestore
@@ -223,8 +232,10 @@ func (h *UserHandler) GetUserGoals(c *gin.Context) {
 		data := doc.Data()
 
 		// Get goal fields
-		if amount, ok := data["goal_amount"].(float64); ok {
+		if amount, ok := data["goal_amount"].(string); ok {
 			goal.GoalAmount = amount
+		} else if amount, ok := data["goal_amount"].(float64); ok {
+			goal.GoalAmount = fmt.Sprintf("%.2f", amount)
 		}
 		if description, ok := data["goal_description"].(string); ok {
 			goal.GoalDescription = description
@@ -232,8 +243,10 @@ func (h *UserHandler) GetUserGoals(c *gin.Context) {
 		if line, ok := data["goal_line"].(string); ok {
 			goal.GoalLine = line
 		}
-		if timeline, ok := data["goal_timeline"].(int64); ok {
-			goal.GoalTimeline = int(timeline)
+		if timeline, ok := data["goal_timeline"].(string); ok {
+			goal.GoalTimeline = timeline
+		} else if timeline, ok := data["goal_timeline"].(int64); ok {
+			goal.GoalTimeline = fmt.Sprintf("%d", timeline)
 		}
 
 		goals = append(goals, goal)
@@ -295,8 +308,10 @@ func (h *UserHandler) GetSpecificGoal(c *gin.Context) {
 	data := doc.Data()
 
 	// Get goal fields
-	if amount, ok := data["goal_amount"].(float64); ok {
+	if amount, ok := data["goal_amount"].(string); ok {
 		goal.GoalAmount = amount
+	} else if amount, ok := data["goal_amount"].(float64); ok {
+		goal.GoalAmount = fmt.Sprintf("%.2f", amount)
 	}
 	if description, ok := data["goal_description"].(string); ok {
 		goal.GoalDescription = description
@@ -304,8 +319,10 @@ func (h *UserHandler) GetSpecificGoal(c *gin.Context) {
 	if line, ok := data["goal_line"].(string); ok {
 		goal.GoalLine = line
 	}
-	if timeline, ok := data["goal_timeline"].(int64); ok {
-		goal.GoalTimeline = int(timeline)
+	if timeline, ok := data["goal_timeline"].(string); ok {
+		goal.GoalTimeline = timeline
+	} else if timeline, ok := data["goal_timeline"].(int64); ok {
+		goal.GoalTimeline = fmt.Sprintf("%d", timeline)
 	}
 
 	c.JSON(http.StatusOK, goal)
@@ -364,6 +381,72 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "User registered successfully",
 		"user":    user,
+	})
+}
+
+// RegisterGoal creates or updates a goal for a specific user in Firestore
+func (h *UserHandler) RegisterGoal(c *gin.Context) {
+	userID := c.Param("userId")
+	goalID := c.Param("goalId")
+	ctx := context.Background()
+
+	// First check if user exists
+	_, err := h.firestoreClient.Collection("users").Doc(userID).Get(ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":   "User not found",
+				"user_id": userID,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to verify user",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Parse request body
+	var req GoalRegistrationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request body",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Prepare goal data for Firestore
+	goalData := map[string]interface{}{
+		"goal_amount":      req.GoalAmount,
+		"goal_description": req.GoalDescription,
+		"goal_line":        req.GoalLine,
+		"goal_timeline":    req.GoalTimeline,
+	}
+
+	// Save goal data to Firestore in the user's goal_info subcollection
+	_, err = h.firestoreClient.Collection("users").Doc(userID).Collection("goal_info").Doc(goalID).Set(ctx, goalData)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to save goal data",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Return success response with the created goal data
+	goal := Goal{
+		ID:              goalID,
+		GoalAmount:      req.GoalAmount,
+		GoalDescription: req.GoalDescription,
+		GoalLine:        req.GoalLine,
+		GoalTimeline:    req.GoalTimeline,
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Goal registered successfully",
+		"goal":    goal,
 	})
 }
 
