@@ -56,7 +56,6 @@ jobs:
           --port=9090 \
           --timeout=600s \
           --memory=512Mi \
-          --set-env-vars PORT=9090
 
     - name: Cleanup service account key
       run: rm "${{ github.workspace }}/service-account.json"
