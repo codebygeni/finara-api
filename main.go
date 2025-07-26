@@ -35,9 +35,15 @@ func main() {
 	// Setup Gin router
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
+	r.Use(gin.Recovery())
 
 	// Setup routes
 	router.SetupRoutes(r, userHandler)
+
+	// Add a basic health check endpoint
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
 
 	// Start server
 	port := os.Getenv("PORT")
