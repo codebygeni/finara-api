@@ -4,11 +4,13 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	"finara-api/config"
 	"finara-api/handlers"
 	"finara-api/router"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,6 +38,30 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
+	// Configure CORS middleware for React compatibility
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{
+			"http://localhost:3000", // React development server
+			"http://localhost:5173", // Vite development server
+			"http://127.0.0.1:3000",
+			"http://127.0.0.1:5173",
+			"https://your-react-app.vercel.app", // Add your production domain
+		},
+		AllowMethods: []string{
+			"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS",
+		},
+		AllowHeaders: []string{
+			"Origin", "Content-Type", "Content-Length", "Accept-Encoding",
+			"X-CSRF-Token", "Authorization", "Accept", "Cache-Control",
+			"X-Requested-With",
+		},
+		ExposeHeaders: []string{
+			"Content-Length",
+		},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	// Setup routes
 	router.SetupRoutes(r, userHandler)
 
@@ -46,7 +72,10 @@ func main() {
 	}
 
 	log.Printf("🚀 Starting Geni Firestore API server on port %s", port)
+	log.Printf("🌐 CORS enabled for React development (localhost:3000, localhost:5173)")
 	log.Printf("📋 Available endpoints:")
+	log.Printf("   GET /dashboard - Financial dashboard")
+	log.Printf("   GET /dashboard/:userId - User-specific dashboard")
 	log.Printf("   GET /users - Get all users")
 	log.Printf("   GET /users/:userId - Get specific user")
 	log.Printf("   POST /users/:userId - Register/Update user")

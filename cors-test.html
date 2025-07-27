@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test for Finara API</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .test-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        button {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+        }
+        button:hover {
+            background: #3a8bdb;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .success { background: rgba(56, 161, 105, 0.3); }
+        .error { background: rgba(229, 62, 62, 0.3); }
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚗 Finara API CORS Test</h1>
+    
+    <div class="test-container">
+        <h2>API Connection Tests</h2>
+        <p>Test your CORS-enabled Go API from this frontend:</p>
+        
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <button onclick="testAPIInfo()">Test API Info</button>
+        <button onclick="testUsers()">Test Users Endpoint</button>
+        <button onclick="openDashboard()">Open Dashboard</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Manual Test URLs</h2>
+        <p>You can also test these URLs directly:</p>
+        <ul>
+            <li><a href="http://localhost:8080/health" target="_blank" style="color: #4facfe;">Health Check</a></li>
+            <li><a href="http://localhost:8080/" target="_blank" style="color: #4facfe;">API Info</a></li>
+            <li><a href="http://localhost:8080/dashboard" target="_blank" style="color: #4facfe;">Financial Dashboard</a></li>
+            <li><a href="http://localhost:8080/users" target="_blank" style="color: #4facfe;">Users Endpoint</a></li>
+        </ul>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        const resultsDiv = document.getElementById('results');
+
+        function showResult(title, success, data, error = null) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${success ? 'success' : 'error'}`;
+            
+            resultDiv.innerHTML = `
+                <h3>${success ? '✅' : '❌'} ${title}</h3>
+                ${error ? `<p><strong>Error:</strong> ${error}</p>` : ''}
+                ${data ? `<pre>${JSON.stringify(data, null, 2)}</pre>` : ''}
+            `;
+            
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        async function testHealth() {
+            try {
+                console.log('Testing health endpoint...');
+                const response = await fetch(`${API_BASE}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('Health Check', true, data);
+                } else {
+                    showResult('Health Check', false, null, `HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                showResult('Health Check', false, null, error.message);
+            }
+        }
+
+        async function testAPIInfo() {
+            try {
+                console.log('Testing API info endpoint...');
+                const response = await fetch(`${API_BASE}/`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('API Info', true, data);
+                } else {
+                    showResult('API Info', false, null, `HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                showResult('API Info', false, null, error.message);
+            }
+        }
+
+        async function testUsers() {
+            try {
+                console.log('Testing users endpoint...');
+                const response = await fetch(`${API_BASE}/users`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('Users Endpoint', true, data);
+                } else {
+                    showResult('Users Endpoint', false, null, `HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                showResult('Users Endpoint', false, null, error.message);
+            }
+        }
+
+        function openDashboard() {
+            window.open(`${API_BASE}/dashboard`, '_blank');
+            showResult('Dashboard', true, { message: 'Dashboard opened in new tab' });
+        }
+
+        // Automatically test CORS when page loads
+        window.onload = function() {
+            console.log('CORS Test Page Loaded');
+            console.log('Testing CORS configuration...');
+            
+            // Show CORS configuration info
+            showResult('CORS Configuration', true, {
+                'Allowed Origins': [
+                    'http://localhost:3000',
+                    'http://localhost:5173',
+                    'http://127.0.0.1:3000',
+                    'http://127.0.0.1:5173'
+                ],
+                'Allowed Methods': ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+                'Credentials': 'Enabled',
+                'Note': 'CORS is configured for React development servers'
+            });
+        };
+    </script>
+</body>
+</html>
