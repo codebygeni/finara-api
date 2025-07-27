@@ -1,8 +1,5 @@
-name: Deploy Finara API to Cloud Run Platfrom
+name: Deploy Finara API to Cloud Run Platform
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 env:
@@ -19,8 +16,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Decode service account key
-      run: echo "${{ secrets.GCP_SA_KEY }}" | base64 -d > "${{ github.workspace }}/service-account.json"
+    - name: Create config directory
+      run: mkdir -p config
+
+    - name: Decode Firebase  service account key
+      run: echo "${{ secrets.GCP_FIREBASE_SA_KEY_BASE64 }}" | base64 -d > config/firebase-service-account.json
+    - name: Verify firebase key file
+      run: |
+        echo "✅ Checking for firebase-service-account.json:"
+        pwd
+        ls -l config
+        file config/firebase-service-account.json
+    - name: Decode  GCP service account key  
+      run: echo "${{ secrets.GCP_SA_KEY_BASE64 }}" | base64 -d > "${{ github.workspace }}/service-account.json"
+
 
     - name: Activate service account
       run: |
@@ -47,7 +56,12 @@ jobs:
           --region ${{ env.REGION }} \
           --platform managed \
           --allow-unauthenticated \
-          --port=8080
+          --port=9090 \
+          --timeout=600s \
+          --memory=512Mi \
 
     - name: Cleanup service account key
       run: rm "${{ github.workspace }}/service-account.json"
+
+    - name: Cleanup firebase key
+      run: rm -f config/firebase-service-account.json
