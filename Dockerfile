@@ -12,6 +12,8 @@ RUN go mod download
 COPY . .
 RUN test -f config/firebase-service-account.json || echo "⚠️ Missing Firebase key! Cloud Run may fail if this is not mounted or baked in."
 
+ENV CGO_ENABLED=0
+
 # Build the Go app
 RUN go build -o geni-firestore-api main.go
 
