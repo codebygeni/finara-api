@@ -15,11 +15,14 @@ RUN test -f config/firebase-service-account.json || echo "⚠️ Missing Firebas
 # Build the Go app
 RUN go build -o geni-firestore-api main.go
 
-# Start a new minimal base image
-FROM gcr.io/distroless/base-debian11
+ # Start a new minimal base image
+FROM debian:bullseye-slim
 
-# Set the working directory inside the container
+ # Set the working directory inside the container
 WORKDIR /app
+
+# Install required packages
+RUN apt-get update && apt-get install -y ca-certificates tzdata && rm -rf /var/lib/apt/lists/*
 
 # Copy the built binary and config
 COPY --from=builder /app/geni-firestore-api .
