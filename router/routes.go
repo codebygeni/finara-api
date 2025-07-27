@@ -33,6 +33,12 @@ func SetupRoutes(r *gin.Engine, userHandler *handlers.UserHandler) {
 	r.GET("/users/:userId/goal_info/:goalId", userHandler.GetSpecificGoal) // GET /users/:userId/goal_info/:goalId
 	r.POST("/users/:userId/goal_info/:goalId", userHandler.RegisterGoal)   // POST /users/:userId/goal_info/:goalId
 
+	// Goal dashboard route - fetches HTML from Firestore and opens in browser
+	r.GET("/users/:userId/goal_info/:goalId/status/:statusId/dashboard", userHandler.GetGoalDashboard) // GET /users/:userId/goal_info/:goalId/status/:statusId/dashboard
+
+	// Goal dashboard HTML route - serves HTML content directly in browser
+	r.GET("/users/:userId/goal_info/:goalId/status/:statusId/view", userHandler.ServeGoalDashboardHTML) // GET /users/:userId/goal_info/:goalId/status/:statusId/view
+
 	// Root endpoint with API info
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -40,15 +46,17 @@ func SetupRoutes(r *gin.Engine, userHandler *handlers.UserHandler) {
 			"version":     "v1.0.0",
 			"description": "Simple REST API for retrieving data from Firebase Firestore",
 			"endpoints": map[string]string{
-				"health":         "GET /health",
-				"dashboard":      "GET /dashboard",
-				"user_dashboard": "GET /dashboard/:userId",
-				"users":          "GET /users",
-				"user_by_id":     "GET /users/:userId",
-				"register_user":  "POST /users/:userId",
-				"user_goals":     "GET /users/:userId/goal_info",
-				"specific_goal":  "GET /users/:userId/goal_info/:goalId",
-				"register_goal":  "POST /users/:userId/goal_info/:goalId",
+				"health":              "GET /health",
+				"dashboard":           "GET /dashboard",
+				"user_dashboard":      "GET /dashboard/:userId",
+				"users":               "GET /users",
+				"user_by_id":          "GET /users/:userId",
+				"register_user":       "POST /users/:userId",
+				"user_goals":          "GET /users/:userId/goal_info",
+				"specific_goal":       "GET /users/:userId/goal_info/:goalId",
+				"register_goal":       "POST /users/:userId/goal_info/:goalId",
+				"goal_dashboard":      "GET /users/:userId/goal_info/:goalId/status/:statusId/dashboard",
+				"goal_dashboard_view": "GET /users/:userId/goal_info/:goalId/status/:statusId/view",
 			},
 		})
 	})

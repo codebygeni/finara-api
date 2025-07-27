@@ -54,6 +54,7 @@ type GoalRegistrationRequest struct {
 	GoalDescription string `json:"goal_description" binding:"required"`
 	GoalLine        string `json:"goal_line" binding:"required"`
 	GoalTimeline    string `json:"goal_timeline" binding:"required"`
+	GoalSetDate     string `json:"goal_set_date" binding:"required"`
 }
 
 // Goal represents the goal data structure
@@ -63,6 +64,7 @@ type Goal struct {
 	GoalDescription string `json:"goal_description"`
 	GoalLine        string `json:"goal_line"`
 	GoalTimeline    string `json:"goal_timeline"`
+	GoalSetDate     string `json:"goal_set_date"`
 }
 
 // GetAllUsers retrieves all users from Firestore
@@ -248,6 +250,9 @@ func (h *UserHandler) GetUserGoals(c *gin.Context) {
 		} else if timeline, ok := data["goal_timeline"].(int64); ok {
 			goal.GoalTimeline = fmt.Sprintf("%d", timeline)
 		}
+		if setDate, ok := data["goal_set_date"].(string); ok {
+			goal.GoalSetDate = setDate
+		}
 
 		goals = append(goals, goal)
 	}
@@ -323,6 +328,9 @@ func (h *UserHandler) GetSpecificGoal(c *gin.Context) {
 		goal.GoalTimeline = timeline
 	} else if timeline, ok := data["goal_timeline"].(int64); ok {
 		goal.GoalTimeline = fmt.Sprintf("%d", timeline)
+	}
+	if setDate, ok := data["goal_set_date"].(string); ok {
+		goal.GoalSetDate = setDate
 	}
 
 	c.JSON(http.StatusOK, goal)
@@ -423,6 +431,7 @@ func (h *UserHandler) RegisterGoal(c *gin.Context) {
 		"goal_description": req.GoalDescription,
 		"goal_line":        req.GoalLine,
 		"goal_timeline":    req.GoalTimeline,
+		"goal_set_date":    req.GoalSetDate,
 	}
 
 	// Save goal data to Firestore in the user's goal_info subcollection
@@ -442,6 +451,7 @@ func (h *UserHandler) RegisterGoal(c *gin.Context) {
 		GoalDescription: req.GoalDescription,
 		GoalLine:        req.GoalLine,
 		GoalTimeline:    req.GoalTimeline,
+		GoalSetDate:     req.GoalSetDate,
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
@@ -455,4 +465,244 @@ func (h *UserHandler) HealthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",
 	})
+}
+
+// GetGoalDashboard fetches HTML from Firestore and serves it directly in the browser
+func (h *UserHandler) GetGoalDashboard(c *gin.Context) {
+	userID := c.Param("userId")
+	goalID := c.Param("goalId")
+	statusID := c.Param("statusId")
+	ctx := context.Background()
+
+	// First check if user exists
+	_, err := h.firestoreClient.Collection("users").Doc(userID).Get(ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			c.HTML(http.StatusNotFound, "", gin.H{})
+			c.Writer.WriteString(`
+				<html>
+				<body>
+					<h1>Error 404: User Not Found</h1>
+					<p>User ID: ` + userID + `</p>
+				</body>
+				</html>
+			`)
+			return
+		}
+		c.HTML(http.StatusInternalServerError, "", gin.H{})
+		c.Writer.WriteString(`
+			<html>
+			<body>
+				<h1>Error 500: Internal Server Error</h1>
+				<p>Failed to verify user</p>
+			</body>
+			</html>
+		`)
+		return
+	}
+
+	// Check if goal exists
+	_, err = h.firestoreClient.Collection("users").Doc(userID).Collection("goal_info").Doc(goalID).Get(ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			c.HTML(http.StatusNotFound, "", gin.H{})
+			c.Writer.WriteString(`
+				<html>
+				<body>
+					<h1>Error 404: Goal Not Found</h1>
+					<p>User ID: ` + userID + `</p>
+					<p>Goal ID: ` + goalID + `</p>
+				</body>
+				</html>
+			`)
+			return
+		}
+		c.HTML(http.StatusInternalServerError, "", gin.H{})
+		c.Writer.WriteString(`
+			<html>
+			<body>
+				<h1>Error 500: Internal Server Error</h1>
+				<p>Failed to verify goal</p>
+			</body>
+			</html>
+		`)
+		return
+	}
+
+	// Get the HTML document from status collection
+	statusDoc, err := h.firestoreClient.
+		Collection("users").Doc(userID).
+		Collection("goal_info").Doc(goalID).
+		Collection("status").Doc(statusID).Get(ctx)
+
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			c.HTML(http.StatusNotFound, "", gin.H{})
+			c.Writer.WriteString(`
+				<html>
+				<body>
+					<h1>Error 404: Dashboard Not Found</h1>
+					<p>No HTML content available for this goal status</p>
+					<p>User ID: ` + userID + `</p>
+					<p>Goal ID: ` + goalID + `</p>
+					<p>Status ID: ` + statusID + `</p>
+				</body>
+				</html>
+			`)
+			return
+		}
+		c.HTML(http.StatusInternalServerError, "", gin.H{})
+		c.Writer.WriteString(`
+			<html>
+			<body>
+				<h1>Error 500: Internal Server Error</h1>
+				<p>Failed to fetch goal dashboard HTML</p>
+			</body>
+			</html>
+		`)
+		return
+	}
+
+	// Extract HTML content from the document
+	data := statusDoc.Data()
+	htmlContent, ok := data["html"].(string)
+	if !ok || htmlContent == "" {
+		c.HTML(http.StatusNotFound, "", gin.H{})
+		c.Writer.WriteString(`
+			<html>
+			<body>
+				<h1>Error 404: Content Not Found</h1>
+				<p>HTML content not found or empty</p>
+				<p>User ID: ` + userID + `</p>
+				<p>Goal ID: ` + goalID + `</p>
+				<p>Status ID: ` + statusID + `</p>
+			</body>
+			</html>
+		`)
+		return
+	}
+
+	// Serve the HTML content directly in the browser
+	c.Header("Content-Type", "text/html; charset=utf-8")
+	c.Writer.WriteString(htmlContent)
+}
+
+// ServeGoalDashboardHTML serves the HTML content directly in the browser
+func (h *UserHandler) ServeGoalDashboardHTML(c *gin.Context) {
+	userID := c.Param("userId")
+	goalID := c.Param("goalId")
+	statusID := c.Param("statusId")
+	ctx := context.Background()
+
+	// First check if user exists
+	_, err := h.firestoreClient.Collection("users").Doc(userID).Get(ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			c.HTML(http.StatusNotFound, "", gin.H{})
+			c.Writer.WriteString(`
+				<html>
+				<body>
+					<h1>Error 404: User Not Found</h1>
+					<p>User ID: ` + userID + `</p>
+				</body>
+				</html>
+			`)
+			return
+		}
+		c.HTML(http.StatusInternalServerError, "", gin.H{})
+		c.Writer.WriteString(`
+			<html>
+			<body>
+				<h1>Error 500: Internal Server Error</h1>
+				<p>Failed to verify user</p>
+			</body>
+			</html>
+		`)
+		return
+	}
+
+	// Check if goal exists
+	_, err = h.firestoreClient.Collection("users").Doc(userID).Collection("goal_info").Doc(goalID).Get(ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			c.HTML(http.StatusNotFound, "", gin.H{})
+			c.Writer.WriteString(`
+				<html>
+				<body>
+					<h1>Error 404: Goal Not Found</h1>
+					<p>User ID: ` + userID + `</p>
+					<p>Goal ID: ` + goalID + `</p>
+				</body>
+				</html>
+			`)
+			return
+		}
+		c.HTML(http.StatusInternalServerError, "", gin.H{})
+		c.Writer.WriteString(`
+			<html>
+			<body>
+				<h1>Error 500: Internal Server Error</h1>
+				<p>Failed to verify goal</p>
+			</body>
+			</html>
+		`)
+		return
+	}
+
+	// Get the HTML document from status collection
+	statusDoc, err := h.firestoreClient.
+		Collection("users").Doc(userID).
+		Collection("goal_info").Doc(goalID).
+		Collection("status").Doc(statusID).Get(ctx)
+
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			c.HTML(http.StatusNotFound, "", gin.H{})
+			c.Writer.WriteString(`
+				<html>
+				<body>
+					<h1>Error 404: Dashboard Not Found</h1>
+					<p>No HTML content available for this goal status</p>
+					<p>User ID: ` + userID + `</p>
+					<p>Goal ID: ` + goalID + `</p>
+					<p>Status ID: ` + statusID + `</p>
+				</body>
+				</html>
+			`)
+			return
+		}
+		c.HTML(http.StatusInternalServerError, "", gin.H{})
+		c.Writer.WriteString(`
+			<html>
+			<body>
+				<h1>Error 500: Internal Server Error</h1>
+				<p>Failed to fetch goal dashboard HTML</p>
+			</body>
+			</html>
+		`)
+		return
+	}
+
+	// Extract HTML content from the document
+	data := statusDoc.Data()
+	htmlContent, ok := data["html"].(string)
+	if !ok || htmlContent == "" {
+		c.HTML(http.StatusNotFound, "", gin.H{})
+		c.Writer.WriteString(`
+			<html>
+			<body>
+				<h1>Error 404: Content Not Found</h1>
+				<p>HTML content not found or empty</p>
+				<p>User ID: ` + userID + `</p>
+				<p>Goal ID: ` + goalID + `</p>
+				<p>Status ID: ` + statusID + `</p>
+			</body>
+			</html>
+		`)
+		return
+	}
+
+	// Serve the HTML content directly
+	c.Header("Content-Type", "text/html; charset=utf-8")
+	c.Writer.WriteString(htmlContent)
 }

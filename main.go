@@ -82,6 +82,8 @@ func main() {
 	log.Printf("   GET /users/:userId/goal_info - Get user's goals")
 	log.Printf("   GET /users/:userId/goal_info/:goalId - Get specific goal")
 	log.Printf("   POST /users/:userId/goal_info/:goalId - Register/Update goal")
+	log.Printf("   GET /users/:userId/goal_info/:goalId/status/:statusId/dashboard - View goal dashboard HTML directly in browser")
+	log.Printf("   GET /users/:userId/goal_info/:goalId/status/:statusId/view - View goal dashboard HTML directly in browser")
 	log.Printf("   GET /health - Health check")
 
 	if err := r.Run(":" + port); err != nil {
