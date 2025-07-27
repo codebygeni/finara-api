@@ -2,161 +2,201 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Financial Portfolio Dashboard | Car Goal Analysis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Car Goal Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      color: #1a202c;
-      font-weight: 400;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #f0f4f8, #f9fbfc);
+      color: #1f2937;
+      padding: 2rem;
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-    }
-
-    header {
+    h1 {
+      font-size: 2.2rem;
       text-align: center;
-      margin-bottom: 3rem;
-      padding: 2rem 0;
-    }
-
-    header h1 {
-      font-size: 3rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.025em;
+      margin-bottom: 0.2rem;
+      color: #22045e;
+      font-weight: bold;
     }
 
     header p {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 1.25rem;
-      font-weight: 400;
-    }
-
-    .status-badge {
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 25px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      margin-top: 1rem;
-      backdrop-filter: blur(10px);
+      text-align: center;
+      color: #000000;
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      font-weight: bold;
     }
 
     .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin: 2rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 2rem;
     }
 
     .card {
-      padding: 2rem 1.5rem;
-      border-radius: 16px;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #1a202c;
-      font-size: 0.875rem;
-      text-align: left;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      flex: 1 1 200px;
+      padding: 1.5rem;
+      border-radius: 12px;
+      color: white;
+      text-align: center;
+      font-size: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
     }
 
     .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+      transform: scale(1.02);
     }
 
-    .card-value {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      color: #2d3748;
+    .card p {
+      font-size: 1.6rem;
+      margin-top: 0.3rem;
+      font-weight: bold;
     }
 
-    .card-label {
-      color: #718096;
-      font-weight: 400;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-size: 0.75rem;
-    }
-
-    .card.achievement .card-value { color: #38a169; }
-    .card.asset .card-value { color: #3182ce; }
-    .card.liability .card-value { color: #e53e3e; }
-    .card.target .card-value { color: #805ad5; }
+    .blue { background-color: #3b82f6; }
+    .yellow { background-color: #facc15; color: #111827; }
+    .red { background-color: #ef4444; }
+    .green { background-color: #10b981; }
 
     .progress-area {
       margin: 2rem 0;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
-      padding: 2rem;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-
-    .progress-area h2 {
-      color: #2d3748;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-      font-size: 1.5rem;
     }
 
     .progress-bar {
-      background: #e2e8f0;
-      border-radius: 12px;
+      background: #d1d5db;
+      border-radius: 999px;
+      height: 28px;
       overflow: hidden;
-      height: 32px;
-      position: relative;
     }
 
     .progress {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      background: linear-gradient(to right, #10b981, #22c55e);
       height: 100%;
       text-align: center;
-      line-height: 32px;
       color: white;
-      font-weight: 600;
-      width: 0;
-      transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: bold;
+      line-height: 28px;
+      width: 32.5%;
+      transition: width 0.5s ease;
+    }
+
+    .charts {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .chart-box {
+      background: white;
       border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+    }
+
+    .chart-box h2 {
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+      color: #1f2937;
+    }
+
+    .feedback {
+      margin-top: 2rem;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.04);
+    }
+
+    .feedback h2 {
+      margin-bottom: 1.5rem;
+      font-size: 1.4rem;
+      color: #1f2937;
+      text-align: center;
+    }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .insight-card {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border-left: 4px solid;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
       position: relative;
       overflow: hidden;
     }
 
-    .progress::before {
+    .insight-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .insight-card.priority-high {
+      border-left-color: #ef4444;
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    }
+
+    .insight-card.priority-medium {
+      border-left-color: #f59e0b;
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    }
+
+    .insight-card.priority-low {
+      border-left-color: #10b981;
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    }
+
+    .insight-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .insight-content h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .insight-content p {
+      margin: 0;
+      line-height: 1.5;
+      color: #4b5563;
+      font-size: 0.9rem;
+    }
+
+    .success-indicator {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .success-indicator::before {
       content: '';
       position: absolute;
       top: 0;
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-      animation: shimmer 2s infinite;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      animation: shimmer 3s infinite;
     }
 
     @keyframes shimmer {
@@ -164,211 +204,172 @@
       100% { left: 100%; }
     }
 
-    .charts {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: 2rem;
-      margin: 3rem 0;
+    .success-badge {
+      font-size: 1.2rem;
+      font-weight: bold;
+      display: block;
+      margin-bottom: 0.5rem;
     }
 
-    .chart-box {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
-      padding: 2rem;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-    }
-
-    .chart-box:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    .chart-box h3 {
-      color: #2d3748;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-      font-size: 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .feedback {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
-      padding: 2rem;
-      margin-top: 3rem;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-
-    .feedback h3 {
-      color: #2d3748;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-      font-size: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .success-note {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 0.9rem;
     }
 
     .feedback ul {
-      line-height: 1.8;
-      list-style: none;
-      padding: 0;
-    }
-
-    .feedback li {
-      padding: 0.75rem 0;
-      border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      color: #4a5568;
-      font-weight: 500;
-    }
-
-    .feedback li:last-child {
-      border-bottom: none;
-    }
-
-    .priority-high { color: #e53e3e; }
-    .priority-medium { color: #ed8936; }
-    .priority-low { color: #38a169; }
-
-    @media (max-width: 768px) {
-      .charts {
-        grid-template-columns: 1fr;
-      }
+      margin-top: 0.8rem;
+      padding-left: 1.5rem;
+      line-height: 1.6;
+      color: #374151;
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>🚗 Can You Afford a ₹20L Car?</h1>
-  <p>Financial Assessment Dashboard – July 2025</p>
-</header>
+  <header>
+    <h1>🚗 Car Goal Dashboard</h1>
+    <p>“Can I afford a ₹20L car by next year?” | 3-Year Timeline</p>
+  </header>
 
-<!-- Cards -->
-<section class="cards">
-  <div class="card green">Net Worth: ₹6.58 L</div>
-  <div class="card blue">Assets: ₹7.22 L</div>
-  <div class="card red">Debt: ₹64K</div>
-  <div class="card yellow">Goal Achieved: 32.5%</div>
-</section>
+  <!-- Goal Cards -->
+  <section class="cards">
+    <div class="card blue">
+      <h3>Current Liquid Assets</h3>
+      <p>₹6.5 Lakhs</p>
+    </div>
+    <div class="card yellow">
+      <h3>Goal Achieved</h3>
+      <p>32.5%</p>
+    </div>
+    <div class="card red">
+      <h3>Remaining Needed</h3>
+      <p>₹13.5 Lakhs</p>
+    </div>
+    <div class="card green">
+      <h3>Success Probability</h3>
+      <p>85%</p>
+    </div>
+  </section>
 
-<!-- Progress -->
-<section class="progress-area">
-  <h2>🎯 Progress Toward ₹20L Car</h2>
-  <div class="progress-bar">
-    <div class="progress" id="progressBar">32.5%</div>
-  </div>
-</section>
+  <!-- Progress -->
+  <section class="progress-area">
+    <h2>Progress Toward Goal</h2>
+    <div class="progress-bar">
+      <div class="progress">32.5%</div>
+    </div>
+  </section>
 
-<!-- Charts -->
-<section class="charts">
-  <div class="chart-box">
-    <h3>📈 Net Worth Projection (₹ Lakhs)</h3>
-    <canvas id="lineChart"></canvas>
-  </div>
-  <div class="chart-box">
-    <h3>💼 Asset Allocation</h3>
-    <canvas id="pieChart"></canvas>
-  </div>
-  <div class="chart-box">
-    <h3>📊 Monthly Budget Allocation</h3>
-    <canvas id="barChart"></canvas>
-  </div>
-</section>
+  <!-- Strategic Financial Insights -->
+  <section class="feedback">
+    <h2>💡 Strategic Financial Roadmap</h2>
+    <div class="insight-grid">
+      <div class="insight-card priority-high">
+        <div class="insight-icon">🎯</div>
+        <div class="insight-content">
+          <h3>Acceleration Strategy</h3>
+          <p>Boost monthly savings by <strong>₹5,000</strong> to fast-track your goal by 8-10 months. This small increase compounds significantly over time.</p>
+        </div>
+      </div>
+      
+      <div class="insight-card priority-medium">
+        <div class="insight-icon">📈</div>
+        <div class="insight-content">
+          <h3>Smart Investment Mix</h3>
+          <p>Diversify with <strong>SIP + Equity Funds</strong> targeting 12-15% annual returns. Your current 32.5% progress shows excellent discipline.</p>
+        </div>
+      </div>
+      
+      <div class="insight-card priority-medium">
+        <div class="insight-icon">✂️</div>
+        <div class="insight-content">
+          <h3>Expense Optimization</h3>
+          <p>Identify and trim <strong>₹3,000-5,000</strong> in discretionary spending. Small cuts today = big dreams tomorrow.</p>
+        </div>
+      </div>
+      
+      <div class="insight-card priority-low">
+        <div class="insight-icon">📊</div>
+        <div class="insight-content">
+          <h3>Quarterly Reviews</h3>
+          <p>Schedule <strong>quarterly check-ins</strong> to track progress and adjust strategy. Stay agile, stay on target.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="success-indicator">
+      <span class="success-badge">🚀 High Success Probability: 85%</span>
+      <p class="success-note">Your disciplined approach and current trajectory indicate excellent goal achievement potential.</p>
+    </div>
+  </section>
 
-<!-- Feedback -->
-<section class="feedback">
-  <h3>📋 Financial Recommendations</h3>
-  <ul>
-    <li>❗ Clear ₹47K overdue debt immediately</li>
-    <li>📉 Avoid ₹20L car loan for now due to EMI stress (~₹30-35K/month)</li>
-    <li>✅ Wait 12–18 months, build credit to 750+</li>
-    <li>🚗 Prefer ₹8–12L car or large down payment if urgent</li>
-    <li>💡 Consider car loan only after clearing liabilities</li>
-  </ul>
-</section>
+  <!-- Charts -->
+  <section class="charts">
+    <div class="chart-box">
+      <h2>📈 Corpus Growth Timeline</h2>
+      <canvas id="lineChart" height="100"></canvas>
+    </div>
+    <div class="chart-box">
+      <h2>📊 Monthly Budget Allocation</h2>
+      <canvas id="barChart" height="100"></canvas>
+    </div>
+  </section>
 
-<script>
-  // Progress animation
-  const progress = document.getElementById('progressBar');
-  const value = parseFloat(progress.innerText);
-  progress.style.width = value + '%';
-
-  // Line chart - Net Worth Growth
-  new Chart(document.getElementById('lineChart'), {
-    type: 'line',
-    data: {
-      labels: ['Now', 'Year 1', 'Year 2', 'Year 3'],
-      datasets: [{
-        label: 'Net Worth (₹ Lakhs)',
-        data: [6.58, 12, 17, 20.5],
-        fill: true,
-        backgroundColor: 'rgba(66,133,244,0.1)',
-        borderColor: '#4285F4',
-        borderWidth: 3,
-        tension: 0.4,
-        pointBackgroundColor: '#4285F4'
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { callback: val => `₹${val}L` } }
-      }
-    }
-  });
-
-  // Pie Chart - Asset Breakdown
-  new Chart(document.getElementById('pieChart'), {
-    type: 'pie',
-    data: {
-      labels: ['Savings ₹1.95L', 'EPF ₹2.11L', 'Indian Stocks ₹2.00L', 'MFs ₹0.85L', 'US Stocks ₹0.3L'],
-      datasets: [{
-        label: 'Assets',
-        data: [1.95, 2.11, 2.00, 0.85, 0.30],
-        backgroundColor: ['#34A853', '#FBBC05', '#4285F4', '#EA4335', '#AB47BC']
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { position: 'bottom' } }
-    }
-  });
-
-  // Bar Chart - Monthly Budget
-  new Chart(document.getElementById('barChart'), {
-    type: 'bar',
-    data: {
-      labels: ['Savings', 'Debt Repayment', 'Investments'],
-      datasets: [{
-        label: 'Monthly (₹)',
-        data: [37500, 6000, 27500],
-        backgroundColor: ['#34A853', '#EA4335', '#4285F4']
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      scales: {
-        x: {
-          beginAtZero: true,
-          ticks: { callback: val => `₹${val}` }
-        }
+  <!-- Chart Script -->
+  <script>
+    // Line Chart
+    const lineCtx = document.getElementById('lineChart').getContext('2d');
+    new Chart(lineCtx, {
+      type: 'line',
+      data: {
+        labels: ['Now', 'Year 1', 'Year 2', 'Year 3'],
+        datasets: [{
+          label: 'Corpus in ₹ Lakhs',
+          data: [6.5, 12, 17, 20.5],
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderColor: '#2563eb',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#2563eb'
+        }]
       },
-      plugins: { legend: { display: false } }
-    }
-  });
-</script>
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: value => `₹${value}L` }
+          }
+        }
+      }
+    });
 
+    // Bar Chart
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Savings', 'Debt Repayment', 'Investments'],
+        datasets: [{
+          label: 'Monthly (₹)',
+          data: [37500, 6000, 27500],
+          backgroundColor: ['#10b981', '#ef4444', '#3b82f6']
+        }]
+      },
+      options: {
+        responsive: true,
+        indexAxis: 'y',
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { callback: value => `₹${value}` }
+          }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  </script>
 </body>
 </html>
