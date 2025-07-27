@@ -1,8 +1,5 @@
-name: Deploy Finara API to Cloud Run Platfrom
+name: Deploy Finara API to Cloud Run Platform
 on:
-  # push:
-  #   branches:
-  #     - main
   workflow_dispatch:
 
 env:
