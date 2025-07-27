@@ -19,14 +19,15 @@ jobs:
     - name: Create config directory
       run: mkdir -p config
 
-    - name: Decode Firebase  service account key
+    - name: Decode Firebase service account key
       run: echo "${{ secrets.GCP_FIREBASE_SA_KEY_BASE64 }}" | base64 -d > config/firebase-service-account.json
+
     - name: Verify firebase key file
       run: |
-        echo "✅ Checking for firebase-service-account.json:"
-        pwd
+        echo "Listing config directory:"
         ls -l config
-        file config/firebase-service-account.json
+        echo "Preview of firebase-service-account.json:"
+        head -n 10 config/firebase-service-account.json
     - name: Decode  GCP service account key  
       run: echo "${{ secrets.GCP_SA_KEY_BASE64 }}" | base64 -d > "${{ github.workspace }}/service-account.json"
 
